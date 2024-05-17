@@ -24,7 +24,7 @@ export async function connect(req, res) {
 
   // if no user found return an error
   if (!exists) {
-    return res.status(401).send('Unauthorized');
+    return res.status(401).send({ error: 'Unauthorized' });
   }
   // generate a random string using uuid
   const randomString = v4();
@@ -48,7 +48,7 @@ export function disconnect(req, res) {
   // retrive the user bazed on the key from redis
   const value = redisClient.get(key);
   if (!value) {
-    return res.status(401).send('Unauthorized');
+    return res.status(401).send({ error: 'Unauthorized' });
   }
   // delete the token in redis and return nothing with status 204
   redisClient.del(key);
