@@ -24,18 +24,20 @@ export async function postNew(req, res) {
   // use     newUser()    findUser()
   // return an error if email is missing
   if (!email) {
-    res.status(400).send('Missing email');
+   return  res.status(400).json({error: 'Missing email' });
   }
+
+
 
   // return an error if password is missing
   if (!password) {
-    res.status(400).send('Missing password');
+    return res.status(400).json({ error: 'Missing password' });
   }
 
   // check if email alredy exists and return an error
   const existEmail = await dbClient.findUser(email);
   if (existEmail) {
-    return res.status(400).send('Already exists');
+    return res.status(400).send({ error: 'Already exist'});
   }
 
   // hass the password with SHA1
