@@ -1,8 +1,8 @@
 import { v4 } from 'uuid';
-import atob from 'buffer';
 import { hassPassword } from './UsersController';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
+const atob = (str) => Buffer.from(str, 'base64').toString('binary');
 
 export async function connect(req, res) {
   // get authorization header
@@ -12,7 +12,9 @@ export async function connect(req, res) {
   const encodedPassEmail = basicValue[1];
 
   // decode using atob() function
+  console.log("what");
   const decoded = atob(encodedPassEmail);
+  
   // split to get email and password using the first :
   const emailAndpass = decoded.split(':');
   // hash the pass with SHA1

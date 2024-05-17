@@ -3,9 +3,10 @@ import { v4 } from 'uuid';
 import fs from 'fs';
 import path from 'path';
 import mime from 'mime-types';
-import atob from 'buffer';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
+import { createThumbnail } from '../worker';
+const atob = (str) => Buffer.from(str, 'base64').toString('binary');
 
 export async function files(req, res) {
   // retrive the x-token
@@ -129,8 +130,13 @@ export async function files(req, res) {
       };
 
       const newfile = await dbClient.newfile(fileOrimage);
+      console.log(newfile);
+      // console.log(`userid: ${value}, fileid: ${newFile._id}`);
+      // create thumbnail in background
+      createThumbnail(newFile._id, value);
 
-      return res.status(201).send(newfile);
+
+      return res.status(201).json(newfile);
     }
   });
 }

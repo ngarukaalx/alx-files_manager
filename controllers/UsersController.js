@@ -4,7 +4,7 @@ import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
 
 // fucction to hash a password with SHA1
-export default function hassPassword(password) {
+export function hassPassword(password) {
   // create a SHA1 obj
   const sha1 = crypto.createHash('sha1');
 
@@ -54,6 +54,7 @@ export async function postNew(req, res) {
 // should retrieve the user base on the token used
 export async function usersMe(req, res) {
   // grab the x-Token headers
+  console.log("am being called");
   const token = req.headers['x-token'];
 
   // construct the key to get the value from redis
