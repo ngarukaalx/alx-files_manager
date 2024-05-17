@@ -4,7 +4,7 @@ import { hassPassword } from './UsersController';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 
-async function connect(req, res) {
+export async function connect(req, res) {
   // get authorization header
   const authHeader = req.headers.authorization;
   const basicValue = authHeader.split(' ');
@@ -39,7 +39,7 @@ async function connect(req, res) {
 }
 
 // disconnect should sign-out the user based on the token
-function disconnect(req, res) {
+export function disconnect(req, res) {
   // get the header X-Token
   const token = req.headers['x-token'];
   // create the key using token
@@ -54,9 +54,3 @@ function disconnect(req, res) {
   redisClient.del(key);
   return res.status(204).send();
 }
-
-// export functions
-module.exports = {
-  connect,
-  disconnect,
-};

@@ -7,7 +7,7 @@ import atob from 'buffer';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 
-async function files(req, res) {
+export async function files(req, res) {
   // retrive the x-token
   const token = req.headers['x-token'];
 
@@ -136,7 +136,7 @@ async function files(req, res) {
 }
 
 //  retrieve the file document based on the ID
-async function filesById(req, res) {
+export async function filesById(req, res) {
   // get the id
   const fileId = req.params.id;
 
@@ -165,7 +165,7 @@ async function filesById(req, res) {
 }
 
 // retrieve all users file documents for a specific parentId and with pagination
-async function usersfiles(req, res) {
+export async function usersfiles(req, res) {
   // get the token
   const token = req.headers['x-token'];
 
@@ -187,7 +187,7 @@ async function usersfiles(req, res) {
 }
 
 // publish by setting isPublic to true
-async function publish(req, res) {
+export async function publish(req, res) {
   // get the token
   const token = req.headers['x-token'];
 
@@ -211,7 +211,7 @@ async function publish(req, res) {
   return res.status(200).json(updated);
 }
 
-async function unPublish(req, res) {
+export async function unPublish(req, res) {
   // get the token
   const token = req.headers['x-token'];
 
@@ -236,7 +236,7 @@ async function unPublish(req, res) {
 }
 
 // should return the content of the file document based on the ID
-async function data(req, res) {
+export async function data(req, res) {
   const fileId = req.params.id;
   const idFileObj = new ObjectId(fileId);
   const fileObject = await dbClient.parentid(idFileObj);
@@ -286,12 +286,3 @@ async function data(req, res) {
     }
   });
 }
-// export files
-module.exports = {
-  files,
-  filesById,
-  usersfiles,
-  publish,
-  unPublish,
-  data,
-};

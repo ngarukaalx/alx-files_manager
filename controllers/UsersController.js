@@ -18,7 +18,7 @@ export default function hassPassword(password) {
 }
 
 // create a new user and validation
-async function postNew(req, res) {
+export async function postNew(req, res) {
   // get the email and password
   const { email, password } = req.body;
   // use     newUser()    findUser()
@@ -52,7 +52,7 @@ async function postNew(req, res) {
 }
 
 // should retrieve the user base on the token used
-async function usersMe(req, res) {
+export async function usersMe(req, res) {
   // grab the x-Token headers
   const token = req.headers['x-token'];
 
@@ -78,10 +78,3 @@ async function usersMe(req, res) {
   const returnObj = { email: user.email, id: user._id };
   return res.status(200).send(returnObj);
 }
-
-// export
-module.exports = {
-  postNew,
-  hassPassword,
-  usersMe,
-};
