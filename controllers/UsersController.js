@@ -7,7 +7,6 @@ import redisClient from '../utils/redis';
 export function hassPassword(password) {
   // create a SHA1 obj
   const sha1 = crypto.createHash('sha1');
-  console.log('This the pass: ', password);
 
   // update with the password
   sha1.update(password);
