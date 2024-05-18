@@ -12,11 +12,13 @@ export async function connect(req, res) {
   const encodedPassEmail = basicValue[1];
 
   // decode using atob() function
-  console.log("what");
   const decoded = atob(encodedPassEmail);
   
   // split to get email and password using the first :
   const emailAndpass = decoded.split(':');
+  if (typeof emailAndpass !== 'string') {
+	  return res.status(401).send({ error: 'Unauthorized' });
+  }
   // hash the pass with SHA1
   const hashedpasss = hassPassword(emailAndpass[1]);
   const email = emailAndpass[0];
@@ -41,14 +43,15 @@ export async function connect(req, res) {
 }
 
 // disconnect should sign-out the user based on the token
-export function disconnect(req, res) {
+export async function disconnect(req, res) {
   // get the header X-Token
   const token = req.headers['x-token'];
   // create the key using token
   const key = `auth_${token}`;
 
   // retrive the user bazed on the key from redis
-  const value = redisClient.get(key);
+  const value = await redisClient.get(key);
+  console.log("this the value: ", value);
   if (!value) {
     return res.status(401).send({ error: 'Unauthorized' });
   }
