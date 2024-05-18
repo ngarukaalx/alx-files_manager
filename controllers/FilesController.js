@@ -95,6 +95,7 @@ export async function files(req, res) {
     if (newfolder) {
       return res.status(201).send(newfolder);
     }
+    res.status(5000).json({ error: 'Error creating folder' });
   }
 
   // All file will be stored locally in a folder
@@ -118,26 +119,26 @@ export async function files(req, res) {
   fs.writeFile(pathFile, details, async (err) => {
     if (err) {
       console.error('Error saving file:', err.message);
-    } else {
-      // Add the new file document in the collection files
-      const value = user._id.toString();
-      const fileOrimage = {
-        userId: value,
-        name,
-        type,
-        isPublic,
-        parentId,
-        localPath: pathFile,
-      };
-
-      const newfile = await dbClient.newfile(fileOrimage);
-      console.log(newfile);
-      // console.log(`userid: ${value}, fileid: ${newFile._id}`);
-      // create thumbnail in background
-      createThumbnail(newfile._id, value);
-
-      return res.status(201).json(newfile);
+      return res.status(500).json({ error: 'Error saving file' });
     }
+    // Add the new file document in the collection files
+    const value = user._id.toString();
+    const fileOrimage = {
+      userId: value,
+      name,
+      type,
+      isPublic,
+      parentId,
+      localPath: pathFile,
+    };
+
+    const newfile = await dbClient.newfile(fileOrimage);
+    console.log(newfile);
+    // console.log(`userid: ${value}, fileid: ${newFile._id}`);
+    // create thumbnail in background
+    createThumbnail(newfile._id, value);
+
+    return res.status(201).json(newfile);
   });
 }
 
@@ -183,7 +184,7 @@ export async function usersfiles(req, res) {
   }
 
   // get query parameters
-  const page = parseInt(req.query.page) || 0;
+  const page = parseInt(req.query.page, 10) || 0;
   const parentId = req.query.parentId || 0;
 
   const limit = 20;
@@ -278,7 +279,6 @@ export async function data(req, res) {
     if (err) {
       return res.status(404).json({ error: 'Not found' });
     }
-    console.log('Exist');
   });
 
   // determine the MIME type based on file name
@@ -290,6 +290,8 @@ export async function data(req, res) {
       // set the appropriate mime-type
       res.writeHead(200, { 'Content-Type': mimeType });
       res.end(data);
+    } else {
+      return res.status(404).json({ error: 'Error reading file' });
     }
   });
 }
