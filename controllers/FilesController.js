@@ -6,6 +6,7 @@ import mime from 'mime-types';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 import { createThumbnail } from '../worker';
+
 const atob = (str) => Buffer.from(str, 'base64').toString('binary');
 
 export async function files(req, res) {
@@ -44,18 +45,18 @@ export async function files(req, res) {
 
   // if name is missing return an error
   if (!name) {
-    return res.status(400).json('Missing name');
+    return res.status(400).json({ error: 'Missing name' });
   }
 
   // if type missing or not part of accepted list return error
   const types = ['folder', 'file', 'image'];
   if (!type || !types.includes(type)) {
-    return res.status(400).send('Missing type');
+    return res.status(400).send({ error: 'Missing type' });
   }
 
   // if data is missing and type not folder error
   if (!data && type !== 'folder') {
-    return res.status(400).send('Missing data');
+    return res.status(400).send({ error: 'Missing data' });
   }
 
   // If the parentId is set get the filefolder
@@ -64,12 +65,12 @@ export async function files(req, res) {
     const fileObj = await dbClient.parentid(fId);
     // if no file present error
     if (!fileObj) {
-      return res.status(400).json('Parent not found');
+      return res.status(400).json({ error: 'Parent not found' });
     }
 
     // if file present but not type folder error
     if (fileObj && fileObj.type !== 'folder') {
-      return res.status(400).send('Parent is not a folder');
+      return res.status(400).send({ error: 'Parent is not a folder' });
     }
 
     // update the document saved in db with user id as owner of the folder
@@ -133,8 +134,7 @@ export async function files(req, res) {
       console.log(newfile);
       // console.log(`userid: ${value}, fileid: ${newFile._id}`);
       // create thumbnail in background
-      createThumbnail(newFile._id, value);
-
+      createThumbnail(newfile._id, value);
 
       return res.status(201).json(newfile);
     }
@@ -159,12 +159,12 @@ export async function filesById(req, res) {
   const key = `auth_${token}`;
   const useridredis = await redisClient.get(key);
   if (!useridredis) {
-    return res.status(401).json('Unauthorized');
+    return res.status(401).json({ error: 'Unauthorized' });
   }
   // If no file document is linked to the user and the
   // ID passed as parameter, return an error Not found
   if (fileDoc.userId !== useridredis) {
-    return res.status(404).json('Not found');
+    return res.status(404).json({ error: 'Not found' });
   }
 
   return res.status(200).json(fileDoc);
@@ -179,7 +179,7 @@ export async function usersfiles(req, res) {
   const key = `auth_${token}`;
   const useridredis = await redisClient.get(key);
   if (!useridredis) {
-    return res.status(401).json('Unauthorized');
+    return res.status(401).json({ error: 'Unauthorized' });
   }
 
   // get query parameters
@@ -200,7 +200,7 @@ export async function publish(req, res) {
   const key = `auth_${token}`;
   const useridredis = await redisClient.get(key);
   if (!useridredis) {
-    res.status(401).json('Unauthorized');
+    res.status(401).json({ error: 'Unauthorized' });
   }
   // get file id param
   const fileId = req.params.id;
@@ -208,7 +208,7 @@ export async function publish(req, res) {
   const fileObj = await dbClient.parentid(objId);
   // if no file is linked to user error
   if (useridredis !== fileObj.userId) {
-    return res.status(404).json('Not found');
+    return res.status(404).json({ error: 'Not found' });
   }
   // updated isPublic to true
   const val = true;
@@ -224,7 +224,7 @@ export async function unPublish(req, res) {
   const key = `auth_${token}`;
   const useridredis = await redisClient.get(key);
   if (!useridredis) {
-    res.status(401).json('Unauthorized');
+    res.status(401).json({ error: 'Unauthorized' });
   }
   // get file id param
   const fileId = req.params.id;
@@ -232,7 +232,7 @@ export async function unPublish(req, res) {
   const fileObj = await dbClient.parentid(objId);
   // if no file is linked to user error
   if (useridredis !== fileObj.userId) {
-    return res.status(404).json('Not found');
+    return res.status(404).json({ error: 'Not found' });
   }
   // updated isPublic to true
   const val = false;
@@ -247,7 +247,7 @@ export async function data(req, res) {
   const idFileObj = new ObjectId(fileId);
   const fileObject = await dbClient.parentid(idFileObj);
   if (!fileObject) {
-    return res.status(404).json('Not found');
+    return res.status(404).json({ error: 'Not found' });
   }
 
   // get token to retrive the userid
@@ -256,28 +256,29 @@ export async function data(req, res) {
   const useridredis = await redisClient.get(key);
   // if file not public and no user authecticated or not the owner error
   if (fileObject.isPublic === true && !useridredis) {
-    console.log('it s fine');
+    return res.status(404).json({ error: 'Not found' });
   }
   if (useridredis !== fileObject.userId) {
     console.log(useridredis);
   }
   if (fileObject.isPublic === false && !useridredis) {
-    return res.status(404).json('Not found');
+    return res.status(404).json({ error: 'Not found' });
   }
 
   if (useridredis && useridredis !== fileObject.userId) {
-    return res.status(404).json('Not found');
+    return res.status(404).json({ error: 'Not found' });
   }
 
   if (fileObject.type === 'folder') {
-    return res.status(400).json("folder doesn't have content");
+    return res.status(400).json({ error: "folder doesn't have content" });
   }
 
   // check if file exists localy
   fs.access(fileObject.localPath, fs.constants.F_OK, (err) => {
     if (err) {
-      return res.status(404).json('Not found');
+      return res.status(404).json({ error: 'Not found' });
     }
+    console.log('Exist');
   });
 
   // determine the MIME type based on file name
