@@ -93,6 +93,8 @@ export async function files(req, res) {
     };
     const newfolder = await dbClient.newfile(contents);
     if (newfolder) {
+      newfolder.id = newfolder._id;
+      delete newfolder._id;
       return res.status(201).send(newfolder);
     }
     res.status(5000).json({ error: 'Error creating folder' });
@@ -137,6 +139,8 @@ export async function files(req, res) {
     // console.log(`userid: ${value}, fileid: ${newFile._id}`);
     // create thumbnail in background
     createThumbnail(newfile._id, value);
+    newfile.id = newfile._id;
+    delete newfile._id;
 
     return res.status(201).json(newfile);
   });
